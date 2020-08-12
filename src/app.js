@@ -21,24 +21,24 @@ app.post('/repositories', (request, response) => {
 })
 
 app.put('/repositories/:id', (request, response) => {
-	const { title, url, techs } = request.body
 	const { id } = request.params
-	let repositoryIndex = repositories.findIndex(
+	const { title, url, techs } = request.body
+	const repositoryIndex = repositories.findIndex(
 		(repository) => repository.id === id
 	)
 	if (repositoryIndex === -1) {
-		return response.status(400).json({ error: 'Repository does not found' })
+		return response.status(400).json({ err: 'Repository not found' })
 	}
 
-	const repository = {
+	repositories[repositoryIndex] = {
 		id,
-		title,
-		url,
-		techs,
+		title: title ? title : repositories[repositoryIndex].title,
+		url: url ? url : repositories[repositoryIndex].url,
+		techs: techs ? techs : repositories[repositoryIndex].techs,
 		likes: repositories[repositoryIndex].likes
 	}
-	repositories[repositoryIndex] = repository
-	return response.json(repository)
+
+	return response.json(repositories[repositoryIndex])
 })
 
 app.delete('/repositories/:id', (request, response) => {
@@ -46,28 +46,27 @@ app.delete('/repositories/:id', (request, response) => {
 	const repositoryIndex = repositories.findIndex(
 		(repository) => repository.id === id
 	)
-	if (repositoryIndex >= 0) {
-		repositories.splice(repositoryIndex, 1)
-	} else {
-		return response.status(400).json({ error: 'Repository does not found' })
+	if (repositoryIndex < 0) {
+		return response.status(400).json({ err: 'Repository not found' })
 	}
+
+	repositories.splice(repositoryIndex, 1)
 	return response.status(204).send()
 })
 
 app.post('/repositories/:id/like', (request, response) => {
 	const { id } = request.params
 
-	const repositoryIndex = repositories.find(
+	const repositoryIndex = repositories.findIndex(
 		(repository) => repository.id === id
 	)
 
-	if (repositoryIndex === -1) {
-		return response.status(400).json({ error: 'Repository does not found' })
+	if (repositoryIndex < 0) {
+		return response.status(400).json({ err: 'Repository not found' })
 	}
 
 	repositories[repositoryIndex].likes += 1
-
-	return response.json(repository[repositoryIndex])
+	return response.json(repositories[repositoryIndex])
 })
 
 module.exports = app
